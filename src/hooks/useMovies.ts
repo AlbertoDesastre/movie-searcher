@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useCallback } from "react";
 import { getMovies } from "../services/getMovies";
 
 export type Movie = {
@@ -14,7 +14,7 @@ function useMovies({ search }: { search: string }) {
   const [movies, setMovies] = useState<Movie[]>([]);
   const searchRef = useRef(search);
 
-  const searchMovies = async ({ search }: { search: string }) => {
+  const searchMovies = useCallback(async ({ search }: { search: string }) => {
     if (searchRef.current === search) return;
     try {
       searchRef.current = search;
@@ -26,7 +26,7 @@ function useMovies({ search }: { search: string }) {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   return { movies, loading, searchMovies };
 }
