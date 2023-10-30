@@ -1,35 +1,56 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import "./App.scss";
+import MovieList from "./components/MovieList/MovieList";
+import { useMovies } from "./hooks/useMovies";
+import { useState, useCallback } from "react";
+import debounce from "just-debounce-it";
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [search, setSearch] = useState("");
+  const { movies, loading, searchMovies } = useMovies({ search });
+
+  const debounceSearchMovies = useCallback(
+    debounce((search: string) => searchMovies({ search }), 300),
+    []
+  );
+
+  const handleSubmit = (event: React.FormEvent) => {
+    event.preventDefault();
+
+    searchMovies({ search });
+  };
+
+  const handleChange = (event: React.FormEvent) => {
+    const newSearch = (event.target as HTMLInputElement).value;
+
+    setSearch(newSearch);
+
+    debounceSearchMovies(newSearch);
+  };
 
   return (
-    <>
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    <div className="app-container">
+      <header>
+        <form onSubmit={handleSubmit}>
+          <input
+            type="text"
+            value={search}
+            onChange={handleChange}
+            placeholder="Spiderman, Hulk, Superman..."
+          ></input>
+          <button type="submit">Search</button>
+        </form>
+        {loading ? <p>Loading...</p> : null}
+      </header>
+
+      <main>
+        {movies ? (
+          <MovieList movies={movies} />
+        ) : (
+          <p>Search your favourite movies!</p>
+        )}
+      </main>
+    </div>
+  );
 }
 
-export default App
+export default App;
